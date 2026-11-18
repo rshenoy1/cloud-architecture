@@ -1,0 +1,27 @@
+﻿name: Multi-Cloud Terraform CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  validate-iac:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        working-dir:
+          - infra/aws/local
+          - infra/aws/prod
+          - infra/azure/prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform Format Check
+        working-directory: ${{ matrix.working-dir }}
+        run: terraform fmt -check
+      - name: Terraform Init & Validate
+        working-directory: ${{ matrix.working-dir }}
+        run: |
+          terraform init -backend=false
+          terraform validate
